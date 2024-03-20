@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+local severity=${1^^}
+[ -z $severity ] && severity=INFO
+shift
+
+local -A levels=( ['DEBUG']="7" ['INFO']="6" ['WARN']="4" ['ERROR']="3" ['FATAL']="2")
+[[ ! ${!levels[@]} =~ $severity ]] && echo "Invalid log" && exit 1
+
+local LEVEL=${LOG_LEVEL^^}
+[ -z $LEVEL ] && LEVEL=ERROR
+
+local LOG="${levels[${LEVEL}]}"
+local lvl_msg="${levels[${severity}]:-3}"
+
+if [ $LOG -ge $lvl_msg ] ; then
+
+if [ -z $LOG_PATH ] ; then
+    LOG_PATH=$HOME/.gene/log
+    mkdir -p $LOG_PATH
+fi
+
+local message="${@}"
+printf "$(date "+%Y-%m-%d %H:%M:%S") [%s] %s\n" "${severity}" "${message}" >> "$LOG_PATH/$(date "+%Y-%m-%d").log"
